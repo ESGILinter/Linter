@@ -1,32 +1,31 @@
+/*
 
-Aucun Ã©lÃ©ment sÃ©lectionnÃ©
+** FILENAME : Linter
 
-Aller au contenu
-Utiliser Gmail avec un lecteur d'Ã©cran
-Cliquez ici pour activer l'affichage des notifications de bureau pour Gmail.   En savoir plus  Masquer
-Conversations
-0,12 Go (0 %) utilisÃ©s sur 15 Go
-GÃ©rer
-Conditions d'utilisation Â· ConfidentialitÃ© Â· RÃ¨glement du programme
-DerniÃ¨re activitÃ© sur le compte : Il y a 4 minutes
-DÃ©tails
+** MADE BY : Ilès Benkoussa, Arnauld Biam, Victor Meyer
 
-ï»¿#include <stdio.h>
+** Function to analyse the file
+
+*/
+
+
+#include <stdio.h>
 #include <stdlib.h>
 #include "parsing.h"
+#include "Mot_function.h"
+#include "test_function.h"
 
-// Fonctions pour parser des fichiers
 
 
 // Renvoie le nombre de ligne d'un fichier
 
 
-int compteLigne(FILE* fichier) {
+int compteLigne(FILE *fichier) {
 
     int compteur = 0;
     char car;
     rewind(fichier);
-    car = fgetc(fichier);  //ouverture du fichier necessaire au prealable
+    car = fgetc(fichier);
 
     while(car != EOF) {
 
@@ -37,15 +36,17 @@ int compteLigne(FILE* fichier) {
         }
 
         car = fgetc(fichier);
+
     }
 
     rewind(fichier);
-    return compteur + 1; //?? why is that
+    return compteur + 1;
+
 }
 
 // retourne le nombre de caractere du fichier
 
-int compteCaractere(FILE* fichier) {
+int compteCaractere(FILE *fichier) {
 
     int compteur = 0;
     char car;
@@ -56,7 +57,6 @@ int compteCaractere(FILE* fichier) {
 
         compteur += 1;
         car = fgetc(fichier);
-
     }
 
     rewind(fichier);
@@ -64,16 +64,15 @@ int compteCaractere(FILE* fichier) {
 
 }
 
-// Retourne un tableau des caractÃ¨res du fichier envoyÃ©
+// Retourne un tableau des caractères du fichier envoyé
 
-char* tableCaractere(FILE* fichier) {
+char *tableCaractere(FILE *fichier) {
 
     rewind(fichier);
     int nb_car = compteCaractere(fichier);
-    char* tab = malloc(sizeof(char)*(nb_car));
+    char *tab = malloc(sizeof(char) * nb_car);
     char c = fgetc(fichier);
-    int i = 1;
-
+    int i = 0;
 
     while(c != EOF) {
 
@@ -88,39 +87,123 @@ char* tableCaractere(FILE* fichier) {
     return tab;
 }
 
-// list un tableau
-void printArray(char *array, int size) {
+// retourne le nom du fichier du lien envoyé
 
-    for (int i = 0; i < size ; i ++) {
+char *findFileName(char *path) {
 
-        printf("%c", array[i]);
-    }
+    int i = strlen(path) - 1;
+    int longNom = 0;
 
-}
+    for(i ; i >= 0 ; i--) {
 
-
-// renvoie le numero de la ligne de l'index du caratÃ¨re envoyer
-
-int findLine(char *tabChar, int indChar) {
-
-
-    int ligne = 1;
-
-    for (int i = 0 ; i < strlen(tabChar) ; i += 1) {
-
-        if(indChar == i) {
+        if(path[i] == '/') {
             break;
         }
 
-        if(tabChar[i] == '\n') {
-            ligne += 1;
+    }
+
+    longNom = strlen(path) - i - 1;
+    char *nomFichier = malloc(sizeof(char) * (longNom + 1));
+
+    for(i = 0 ; i < longNom ; i++) {
+
+        nomFichier[i] = path[i + strlen(path) - longNom];
+
+    }
+
+    nomFichier[i] = '\0';
+
+    return nomFichier;
+
+}
+
+
+// retourne tableau de classification des charactères
+
+int *scoringChar(char *tabChar) {
+
+    int *tabClassifie = malloc(sizeof(int) * strlen(tabChar));
+
+    for(int i = 0 ; i < strlen(tabChar) ; i ++) {
+
+        // si le caractère est un alphanumerique ind == 1
+
+        if( (tabChar[i] > 47 && tabChar[i] < 58) || (tabChar[i] > 64 && tabChar[i] < 91) || (tabChar[i] < 123 && tabChar[i] > 96 || tabChar[i] == '_') )
+            tabClassifie[i] = 1;
+
+        // si le caractère est un contenant
+
+        else if ( tabChar[i] == '[' || tabChar[i] == ']'|| tabChar[i] == '{' || tabChar[i] == '}' || tabChar[i] == '(' || tabChar[i] == ')' )
+            tabClassifie[i] = 2;
+
+        // si le caratère est un operateur ind = 3
+
+        else if ( tabChar[i] == '?' || tabChar[i] == '.' || tabChar[i] == ':' || tabChar[i] == '/' || tabChar[i] == '!' || tabChar[i] == '*' || tabChar[i] == '%' || tabChar[i] == '+' || tabChar[i] == '=' || tabChar[i] == '-' || tabChar[i] == '~' || tabChar[i] == '$' || tabChar[i] == '&' || tabChar[i] == '|' || tabChar[i] == '^' || tabChar[i] == '<' || tabChar[i] == '>' )
+            tabClassifie[i] = 3;
+
+        // si charactère fin de chaine ind = 4
+
+        else if ( tabChar[i] == ';' || tabChar[i] == '\n' || tabChar[i] == ' ')
+            tabClassifie[i] = 4;
+
+
+        // guillemets ou apostrophes
+
+        else if ( tabChar[i] == '\'' || tabChar[i] == '"' )
+            tabClassifie[i] = 5;
+
+        else {
+
+            tabClassifie[i] = 0;
+
+        }
+
+
+ }
+
+ return tabClassifie;
+
+
+}
+
+
+// retourne un mot entre 2 indices d'un tableau donnés
+
+char *ecritMot(char *tabChar, int ind1, int ind2 ) {
+
+    int lenMot = ind2 - ind1 + 1;
+    int j = 0;
+    char *mot = malloc(sizeof(char)*lenMot);
+
+    for(int i = ind1 ; i <= ind2 ; i ++) {
+
+        mot[j] = tabChar[i];
+        j += 1;
+    }
+    mot[j] = '\0';
+
+    return mot;
+
+}
+
+
+
+// reourne nombre de mots d'un FICHIER .C
+
+int nombreMot(char *tabChar) {
+
+    int *tb_classe;
+    tb_classe = scoringChar(tabChar);
+    int compt = 0;
+
+    for(int i = 0 ; i < strlen(tabChar) ; i++) {
+
+        if(tb_classe[i] == 1 && (tb_classe[i-1] == 4 || tb_classe[i - 1] == 3 || tb_classe[i - 1] == 2 || i - 1 < 0 )) {
+
+            compt += 1;
         }
 
     }
 
-
-    return ligne;
+    return compt;
 }
-
-parsing.txt
-Affichage de parsingH.txt en cours...
