@@ -114,9 +114,9 @@ int testEtoile(char *tabChar, int indice) {
     int rep = 0;
     int *tableInd = scoringChar(tabChar);
     char *word;
-    Mot **tabDeMot = tabMot(tabChar, strlen(tabChar));
+    Mot **tabDeMot = tabMot(tabChar);
     Mot **tabDeTypeCree = listTypeCreated(tabDeMot);
-    Mot **tabVFdecl = tabVarFonctDeclar(tabDeMot);
+    Mot **tabVFdecl = tabVarFonctDeclar(tabChar);
     int test = 0;
     int i = 0;
     int j = 0;
@@ -233,23 +233,39 @@ int testParenthese(char *tabChar, int indice){
     return rep;
 }
 
-// retourne la portée d'un indice de charactère
 
-int findStrat(char *tabChar, int indice){
+// retourne 1 si les deux charcatere ont la même portée
 
-    int rep = 0;
+int compareStrat(char *tabChar, int indChar1, int indChar2){
 
-    for(int i = indice; i >= 0 ; i -= 1){
+    int countStrat = 0;
+    int indChange = 0;
 
-        if(tabChar[i] == '}')
-            rep -= 1;
+    if(indChar1 > indChar2)
+        return -1;
 
-        if(tabChar[i] == '{')
-            rep += 1;
+    for(int i = indChar2; i >= indChar1 ; i -= 1){
+
+        if(tabChar[i] == '}'){
+            countStrat -= 1;
+            indChange += 1;
+        }
+
+        else if(tabChar[i] == '{'){
+            countStrat += 1;
+            indChange += 1;
+        }
 
     }
 
-    return rep;
+    if( countStrat > 0 || indChange == 0 ){
+
+        return 1;
+    }
+    else{
+
+        return 0;
+    }
 
 }
 

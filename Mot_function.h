@@ -14,8 +14,8 @@
  struct Mot {
 
     char *chaine;
-    struct Mot* next;
-    int strat;
+    struct Mot *next;
+    int posFirstChar;
     int ligne;
 
     };
@@ -25,14 +25,14 @@
 
 
 
-Mot **tabMot(char *tabChar, int nb_char);
+Mot **tabMot(char *tabChar);
 int compteOccurence(Mot *word);
 void freeTable(Mot *word);
-Mot *ajouteMot(char *chai, int line, int indent);
+Mot *ajouteMot(char *chai, int line, int position);
 int nbTypeCreated(Mot **tabMot);
 Mot **listTypeCreated(Mot **tabMot);
-int nbVarFonctDeclar(Mot **TabMot);
-Mot **tabVarFonctDeclar(Mot **tabMot);
+int nbVarFonctDeclar(char *tabChar);
+Mot **tabVarFonctDeclar(char *tabChar);
 Mot **SuppNbTab(Mot **tabMot);
 int nbVariableUsed(char *tabChar);
 Mot **tabVariableUsed(char *tabChar);

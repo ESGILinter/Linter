@@ -18,7 +18,7 @@
 
 // retourne liste de mots espacés par des espaces
 
-Mot **tabMot(char *tabChar, int nb_char) {
+Mot **tabMot(char *tabChar) {
 
     Mot **tab_mot = malloc(sizeof(Mot*) * nombreMot(tabChar));
     Mot *word = malloc(sizeof(Mot));
@@ -28,7 +28,7 @@ Mot **tabMot(char *tabChar, int nb_char) {
     int h = 0;
 
 
-    for(int i = 0 ; i < nb_char ; i += 1 ) {
+    for(int i = 0 ; i < strlen(tabChar) ; i += 1 ) {
 
         if(tab_classifie[i] == 1 && ((tab_classifie[i-1] == 4 || tab_classifie[i - 1] == 3 || tab_classifie[i - 1] == 2) || i - 1 < 0)) {
 
@@ -42,8 +42,8 @@ Mot **tabMot(char *tabChar, int nb_char) {
 
                }
 
-                mot_compose = ecritMot(tabChar,i , h - 1);
-                word = ajouteMot(mot_compose, findLine(tabChar, i), findStrat(tabChar, i));
+                mot_compose = ecritMot(tabChar, i , h - 1);
+                word = ajouteMot(mot_compose, findLine(tabChar, i), i);
                 tab_mot[j] = word;
                 j += 1;
 
@@ -59,10 +59,11 @@ Mot **tabMot(char *tabChar, int nb_char) {
                  }
 
                  mot_compose = ecritMot(tabChar, i, h - 1);
-                 word -> next = ajouteMot(mot_compose, findLine(tabChar, i), findStrat(tabChar, i));
+                 word -> next = ajouteMot(mot_compose, findLine(tabChar, i), i);
                  word = word -> next;
                  tab_mot[j] = word;
                  j += 1;
+
 
             }
 
@@ -71,7 +72,6 @@ Mot **tabMot(char *tabChar, int nb_char) {
 
     }
 
-   //return tab_mot;
     return SuppNbTab(tab_mot);
 
 }
@@ -79,12 +79,12 @@ Mot **tabMot(char *tabChar, int nb_char) {
 
 // retourne une variable de type Mot
 
-Mot *ajouteMot(char *chai, int line, int indent) {
+Mot *ajouteMot(char *chai, int line, int position) {
 
     Mot *word = malloc(sizeof(Mot));
     word -> chaine = chai;
     word -> ligne = line;
-    word -> strat = indent;
+    word -> posFirstChar = position;
     word -> next = NULL;
 
     return(word);
@@ -178,13 +178,13 @@ Mot **SuppNbTab(Mot **tabMot) {
 
 
             if(h == 0){
-                motTemp = ajouteMot(tabMot[i] -> chaine, tabMot[i] -> ligne, tabMot[i] -> strat);
+                motTemp = ajouteMot(tabMot[i] -> chaine, tabMot[i] -> ligne, tabMot[i] -> posFirstChar);
                 tabMotClean[h] = motTemp;
                 h ++;
             }
             else{
 
-                motTemp -> next = ajouteMot(tabMot[i] -> chaine, tabMot[i] -> ligne, tabMot[i] -> strat);
+                motTemp -> next = ajouteMot(tabMot[i] -> chaine, tabMot[i] -> ligne, tabMot[i] -> posFirstChar);
                 motTemp = motTemp -> next;
                 tabMotClean[h] = motTemp;
                 h ++;
@@ -201,6 +201,7 @@ Mot **SuppNbTab(Mot **tabMot) {
 // retourne le nombre de structures, union, enumeration appeles
 
 int nbTypeCreated(Mot **tabMot) {
+
 
     int compt = 0;
     int indStruct;
@@ -291,17 +292,18 @@ Mot **listTypeCreated(Mot **tabMot){
 
 // compte le nombre de variables et fonctions declares
 
-int nbVarFonctDeclar(Mot **tabMot) {
+int nbVarFonctDeclar(char *tabChar){
 
+    Mot** tabDeMot = tabMot(tabChar);
     int compt = 0;
     int ind = 0;
-    Mot **tabDeType = listTypeCreated(tabMot);
+    Mot **tabDeType = listTypeCreated(tabDeMot);
 
-    for(int i = 0; i < compteOccurence(tabMot[0]); i ++) {
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
 
-        if(testTypeVarFunct(tabMot[i] -> chaine, tabDeType) == 1 && i + 1 < compteOccurence(tabMot[0])){
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabDeType) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
 
-           ind = testTypeVarFunct(tabMot[i+1] -> chaine, tabDeType);
+           ind = testTypeVarFunct(tabDeMot[i+1] -> chaine, tabDeType);
            if(ind != 1)
             compt += 1;
         }
@@ -309,15 +311,18 @@ int nbVarFonctDeclar(Mot **tabMot) {
 
 
     }
+    freeTable(tabDeMot);
     return compt;
 }
 
 
 // tableau des noms variables et fonctions déclarées
 
-Mot **tabVarFonctDeclar(Mot **tabMot) {
+Mot **tabVarFonctDeclar(char *tabChar) {
 
-    if(nbVarFonctDeclar(tabMot) == 0){
+    Mot **tabDeMot = tabMot(tabChar);
+
+    if(nbVarFonctDeclar(tabChar) == 0){
 
         Mot **tabVF = malloc(sizeof(Mot *));
         tabVF[0] = ajouteMot("NULL", 0, 0);
@@ -325,23 +330,23 @@ Mot **tabVarFonctDeclar(Mot **tabMot) {
 
     }
 
-    Mot **tabVF = malloc(sizeof(Mot *) * nbVarFonctDeclar(tabMot) );
+    Mot **tabVF = malloc(sizeof(Mot *) * nbVarFonctDeclar(tabChar) );
     Mot *VF = malloc(sizeof(Mot));
-    Mot **tabDeType = listTypeCreated(tabMot);
+    Mot **tabDeType = listTypeCreated(tabDeMot);
     int test = 0;
     int ind = 0;
 
 
-    for(int i = 0; i < compteOccurence(tabMot[0]); i ++) {
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
 
-        if(testTypeVarFunct(tabMot[i] -> chaine, tabDeType) == 1 && i + 1 < compteOccurence(tabMot[0])){
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabDeType) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
 
-           test = testTypeVarFunct(tabMot[i+1] -> chaine, tabDeType);
+           test = testTypeVarFunct(tabDeMot[i+1] -> chaine, tabDeType);
            if(test != 1) {
 
                 if(ind == 0) {
 
-                    VF = ajouteMot(tabMot[i + 1] -> chaine, 0, 0);
+                    VF = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
                     tabVF[ind] = VF;
                     ind ++;
 
@@ -349,7 +354,7 @@ Mot **tabVarFonctDeclar(Mot **tabMot) {
 
                 else {
 
-                    VF -> next = ajouteMot(tabMot[i + 1] -> chaine, 0, 0);
+                    VF -> next = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
                     VF = VF -> next;
                     tabVF[ind] = VF;
                     ind ++;
@@ -361,6 +366,7 @@ Mot **tabVarFonctDeclar(Mot **tabMot) {
 
     }
 
+    freeTable(tabDeMot);
     return tabVF;
 }
 
@@ -445,13 +451,13 @@ Mot **tabVariableUsed(char *tabChar){
 
                         if(l == 0){
 
-                            var_used = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), findStrat(tabChar, i));
+                            var_used = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), h);
                             tab_var_used[l] = var_used;
                             l += 1;
 
                         }
                         else{
-                            var_used -> next = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), findStrat(tabChar, i));
+                            var_used -> next = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), h);
                             var_used = var_used -> next;
                             tab_var_used[l] = var_used;
                             l += 1;
@@ -476,14 +482,14 @@ Mot **tabVariableUsed(char *tabChar){
 
                         if(l == 0){
 
-                            var_used = ajouteMot(ecritMot(tabChar, j, h + 1), findLine(tabChar, i), findStrat(tabChar, i));
+                            var_used = ajouteMot(ecritMot(tabChar, j, h + 1), findLine(tabChar, i), j);
                             tab_var_used[l] = var_used;
                             l += 1;
 
                         }
                         else{
 
-                            var_used -> next = ajouteMot(ecritMot(tabChar, h, j + 1), findLine(tabChar, i), findStrat(tabChar, i));
+                            var_used -> next = ajouteMot(ecritMot(tabChar, h, j + 1), findLine(tabChar, i), h);
                             var_used = var_used -> next;
                             tab_var_used[l] = var_used;
                             l += 1;
@@ -545,6 +551,8 @@ int nbArgumentUsed(char *tabChar){
     return nb;
 }
 
+// retorune une liste des variables passées en arguments de fonctions
+
 Mot** tabArgumentUsed(char *tabChar){
 
     int *tab_classe = scoringChar(tabChar);
@@ -573,13 +581,13 @@ Mot** tabArgumentUsed(char *tabChar){
 
                 if(ind == 0){
 
-                    arg = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), findStrat(tabChar, h));
+                    arg = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
                     tab_arg[ind] = arg;
                     ind += 1;
                 }
                 else {
 
-                    arg -> next = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), findStrat(tabChar, h));
+                    arg -> next = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
                     arg = arg -> next;
                     tab_arg[ind] = arg;
                     ind += 1;
@@ -602,14 +610,14 @@ Mot** tabArgumentUsed(char *tabChar){
 
                     if(ind == 0){
 
-                        arg = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), findStrat(tabChar, h));
+                        arg = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
                         tab_arg[ind] = arg;
                         ind += 1;
 
                     }
                     else {
 
-                        arg -> next = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), findStrat(tabChar, h));
+                        arg -> next = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
                         arg = arg -> next;
                         tab_arg[ind] = arg;
                         ind += 1;

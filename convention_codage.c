@@ -15,9 +15,9 @@
 #include "test_function.h"
 #include "convention_codage.h"
 
-// retourne une rreur si pas d'espace après une virgule
+// retourne une erreur si pas d'espace après une virgule
 
-void comma_spacing (char *tabChar,char* nomFich) {
+void comma_spacing(char *tabChar, char *nomFich){
 
     int ligne = 0;
 

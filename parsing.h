@@ -16,5 +16,5 @@ int compteCaractere(FILE *fichier);
 char *tableCaractere(FILE *fichier);
 char *findFileName(char *path);
 int *scoringChar(char *tabChar);
-char *ecritMot(char *tabChar, int ind1, int ind2 );
+char *ecritMot(char *tabChar, int ind1, int ind2);
 int nombreMot(char *tabChar);

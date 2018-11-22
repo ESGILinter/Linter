@@ -68,11 +68,20 @@ int compteCaractere(FILE *fichier) {
 
 char *tableCaractere(FILE *fichier) {
 
+
     rewind(fichier);
+
+    if(compteCaractere(fichier) == 0){
+
+       exit(EXIT_SUCCESS);
+
+    }
+
     int nb_car = compteCaractere(fichier);
     char *tab = malloc(sizeof(char) * nb_car);
     char c = fgetc(fichier);
     int i = 0;
+
 
     while(c != EOF) {
 

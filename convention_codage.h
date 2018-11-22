@@ -10,8 +10,8 @@
 
 
 
-void comma_spacing (char *tabChar, char* nomFich);
-void max_line_numbers(char *tabChar, int maxChar, char* nomFich);
-void no_trailing_space(char *tabChar, char* nomFich);
+void comma_spacing(char *tabChar, char *nomFich);
+void max_line_numbers(char *tabChar, int maxChar, char *nomFich);
+void no_trailing_space(char *tabChar, char *nomFich);
 void operator_spacing(char *tabChar, char *nomFich);
 
