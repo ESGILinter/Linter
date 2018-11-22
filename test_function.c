@@ -21,12 +21,11 @@
 
 int testQuote(char *tabChar, int indice) {
 
-    int *tableInd = scoringChar(tabChar);
     int rep = 0;
 
     // gauche du charactère
     int i = indice - 1;
-    while(tabChar[i] != '\n' && i > 0) {
+    while(tabChar[i] != '\n' && i >= 0) {
 
         if(tabChar[i] == '\'' || tabChar[i] == '"') {
 
@@ -331,7 +330,6 @@ int findLine(char *tabChar, int indChar) {
         }
 
     }
-
 
     return ligne;
 }
