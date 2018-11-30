@@ -4,8 +4,3 @@ void indent(FILE*, int, char*, int);
 int onlySpacesBefore(char*, int);
 int rightNumberOfSpaces(char*, int, int, int);
 void no_multi_declaration(FILE*, char*, int);
-char* trim_one_space(char*, int);
-void copy_file(FILE*, char*);
-int line_contains_char(char*, char);
-int line_number(char*);
-char** copy_lines(char*, int);
