@@ -1,9 +1,16 @@
+void func(ifgnt*);
+void funcqsdsq(char*);
+
+void func(int* p){
+    *p +=1;
+}
+
 int main(int argc, const char* const * argv){
-    
-	int a, b;
-	//int b;
-	
-	while(rezr){
+
+    int a, b;
+    //int               b;
+
+	while(rezr             ){
         printf("{");
 	}
 }
