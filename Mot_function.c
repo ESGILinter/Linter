@@ -27,22 +27,21 @@ Mot **tabMot(char *tabChar) {
     int j = 0;
     int h = 0;
 
-
     for(int i = 0 ; i < strlen(tabChar) ; i += 1 ) {
 
-        if(tab_classifie[i] == 1 && ((tab_classifie[i-1] == 4 || tab_classifie[i - 1] == 3 || tab_classifie[i - 1] == 2) || i - 1 < 0)) {
+        if(tab_classifie[i] == 1 && ((tab_classifie[i - 1] == 4 || tab_classifie[i - 1] == 3 || tab_classifie[i - 1] == 2  || i - 1 < 0))) {
 
-
-            if( j == 0) {
 
               h = i;
-              while(tab_classifie[h] == 1 && h != strlen(tabChar)) {
+              while(tab_classifie[h + 1] == 1 && h + 1 < strlen(tabChar)) {
 
                     h++;
 
                }
 
-                mot_compose = ecritMot(tabChar, i , h - 1);
+              if(j == 0){
+
+                mot_compose = ecritMot(tabChar, i , h);
                 word = ajouteMot(mot_compose, findLine(tabChar, i), i);
                 tab_mot[j] = word;
                 j += 1;
@@ -52,19 +51,11 @@ Mot **tabMot(char *tabChar) {
 
             else {
 
-                 h = i;
-                 while(tab_classifie[h] == 1 && h != strlen(tabChar)) {
-
-                    h++;
-                 }
-
-                 mot_compose = ecritMot(tabChar, i, h - 1);
+                 mot_compose = ecritMot(tabChar, i, h);
                  word -> next = ajouteMot(mot_compose, findLine(tabChar, i), i);
                  word = word -> next;
                  tab_mot[j] = word;
                  j += 1;
-
-
             }
 
 
@@ -155,9 +146,15 @@ Mot **SuppNbTab(Mot **tabMot) {
 
     }
 
+    if(compt == 0){
+
+        return tabMot;
+
+    }
+
     // creation nouveau tableau
-    Mot** tabMotClean = malloc(sizeof(Mot*) * compteOccurence(tabMot) - compt);
-    Mot* motTemp = malloc(sizeof(Mot));
+    Mot **tabMotClean = malloc(sizeof(Mot*) * compteOccurence(tabMot) - compt);
+    Mot *motTemp = malloc(sizeof(Mot));
 
     for(int i = 0; i < compteOccurence(tabMot[0]); i++) {
 
@@ -200,19 +197,23 @@ Mot **SuppNbTab(Mot **tabMot) {
 
 // retourne le nombre de structures, union, enumeration appeles
 
-int nbTypeCreated(Mot **tabMot) {
+int nbTypeCreated(char *tabChar) {
 
+    Mot **tabDeMot = tabMot(tabChar);
 
     int compt = 0;
     int indStruct;
     int indUnion;
     int indEnum;
 
-    for(int i = 0 ; i < compteOccurence(tabMot[0]) ; i += 1) {
+    for(int i = 0 ; i < compteOccurence(tabDeMot[0]) ; i += 1) {
 
-        indStruct = strcmp(tabMot[i] -> chaine, "struct");
-        indUnion = strcmp(tabMot[i] -> chaine, "union");
-        indEnum = strcmp(tabMot[i] -> chaine, "enum");
+        if(testCommentaire(tabChar, tabDeMot[i] -> posFirstChar) == 1 || testQuote(tabChar, tabDeMot[i] -> posFirstChar) == 1)
+            continue;
+
+        indStruct = strcmp(tabDeMot[i] -> chaine, "struct");
+        indUnion = strcmp(tabDeMot[i] -> chaine, "union");
+        indEnum = strcmp(tabDeMot[i] -> chaine, "enum");
 
         if(indStruct == 0 || indUnion == 0 || indEnum == 0)  {
 
@@ -222,15 +223,20 @@ int nbTypeCreated(Mot **tabMot) {
 
     }
 
+    freeTable(tabDeMot[0]);
     return compt;
 
 }
 
 // retourne liste de strucutre
 
-Mot **listTypeCreated(Mot **tabMot){
+Mot **listTypeCreated(char *tabChar){
 
-    if(nbTypeCreated(tabMot) == 0){
+    Mot **tabDeMot = tabMot(tabChar);
+    int nbTyCre = nbTypeCreated(tabChar);
+
+
+    if(nbTyCre == 0){
 
         Mot **tabType = malloc(sizeof(Mot*));
         tabType[0] = ajouteMot("NULL", 0, 0);
@@ -238,7 +244,7 @@ Mot **listTypeCreated(Mot **tabMot){
 
     }
 
-    Mot **tabType = malloc(sizeof(Mot*) * nbTypeCreated(tabMot));
+    Mot **tabType = malloc(sizeof(Mot*) * nbTyCre);
     Mot *type = malloc(sizeof(Mot));
     int compt = 0;
     int indStruct = 0;
@@ -246,18 +252,14 @@ Mot **listTypeCreated(Mot **tabMot){
     int indEnum = 0;
     int j = 0;
 
-    if(nbTypeCreated(tabMot) == 0){
+    for(int i = 0 ; i < compteOccurence(tabDeMot[0]) ; i += 1) {
 
-        Mot **tabNull = malloc(sizeof(Mot*));
-        tabNull[0] = ajouteMot("NULL", 0, 0);
-        return tabNull;
-    }
+        if(testCommentaire(tabChar, tabDeMot[i] -> posFirstChar) == 1 || testQuote(tabChar, tabDeMot[i] -> posFirstChar) == 1)
+            continue;
 
-    for(int i = 0 ; i < compteOccurence(tabMot[0]) ; i += 1) {
-
-        indStruct = strcmp(tabMot[i] -> chaine, "struct");
-        indUnion = strcmp(tabMot[i] -> chaine, "union");
-        indEnum = strcmp(tabMot[i] -> chaine, "enum");
+        indStruct = strcmp(tabDeMot[i] -> chaine, "struct");
+        indUnion = strcmp(tabDeMot[i] -> chaine, "union");
+        indEnum = strcmp(tabDeMot[i] -> chaine, "enum");
 
 
         if(indStruct == 0 || indUnion == 0 || indEnum == 0)  {
@@ -265,7 +267,7 @@ Mot **listTypeCreated(Mot **tabMot){
 
            if(j == 0) {
 
-                type = ajouteMot(tabMot[i + 1] -> chaine, 0, 0);
+                type = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
                 tabType[j] = type;
                 j += 1;
            }
@@ -276,13 +278,13 @@ Mot **listTypeCreated(Mot **tabMot){
                 compt = 0;
                 for(int h = 0 ; h < compteOccurence(tabType[0]) ; h += 1) {
 
-                    if(strcmp(tabType[h] -> chaine, tabMot[i + 1] -> chaine) == 0)
+                    if(strcmp(tabType[h] -> chaine, tabDeMot[i + 1] -> chaine) == 0)
                         compt += 1;
                 }
 
                 if(compt == 0) {
 
-                    type -> next = ajouteMot(tabMot[i + 1] -> chaine, 0, 0);
+                    type -> next = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
                     type = type -> next;
                     tabType[j] = type;
                     j += 1;
@@ -294,6 +296,7 @@ Mot **listTypeCreated(Mot **tabMot){
 
     }
 
+    freeTable(tabDeMot[0]);
     return tabType;
 
 }
@@ -302,10 +305,10 @@ Mot **listTypeCreated(Mot **tabMot){
 
 int nbVarFonctDeclar(char *tabChar){
 
-    Mot** tabDeMot = tabMot(tabChar);
+    Mot **tabDeMot = tabMot(tabChar);
     int compt = 0;
     int ind = 0;
-    Mot **tabDeType = listTypeCreated(tabDeMot);
+    Mot **tabDeType = listTypeCreated(tabChar);
 
     for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
 
@@ -339,10 +342,9 @@ Mot **tabVarFonctDeclar(char *tabChar) {
     Mot **tabDeMot = tabMot(tabChar);
     Mot **tabVF = malloc(sizeof(Mot *) * nbVarFonctDeclar(tabChar) );
     Mot *VF = malloc(sizeof(Mot));
-    Mot **tabDeType = listTypeCreated(tabDeMot);
+    Mot **tabDeType = listTypeCreated(tabChar);
     int test = 0;
     int ind = 0;
-
 
     for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
 
@@ -377,87 +379,13 @@ Mot **tabVarFonctDeclar(char *tabChar) {
     return tabVF;
 }
 
+// retourne le nombre de variables appelés
 
-int nbVariableUsed(char *tabChar) {
+int nbVariableUsed(char *tabChar){
 
-    int nb = 0;
-    int *tab_classe = scoringChar(tabChar);
-    int j = 0;
-
-    for(int i = 0; i < strlen(tabChar) ; i ++) {
-
-        if(testQuote(tabChar, i) != 1){
-
-            if(testCommentaire(tabChar, i) != 1) {
-
-                if (tab_classe[i] == 3){
-
-                    //gauche de l'operateur
-
-                    j = i;
-                    while(tabChar[j - 1] == ' ' && j - 1 > 0)
-                        j -= 1;
-
-                    if(tab_classe[j - 1] == 1)
-                        nb += 1;
-
-                    //droite de l'operateur
-
-                    j = i;
-
-                    while(tabChar[j + 1] == ' ' && j + 1 < strlen(tabChar))
-                        j += 1;
-
-                    if(tab_classe[j + 1] == 1){
-
-                        int h = j + 1;
-                        while(tab_classe[h + 1] == 1)
-                            h ++;
-
-                        // si opération sur fonction
-                        while(tabChar[h + 1] == ' ')
-                            h += 1;
-
-                        if(tabChar[h + 1] == '('){
-
-                            continue;
-                        }
-
-                        else{
-
-                            nb += 1;
-
-                        }
-
-                    }
-
-
-                }
-
-            }
-
-
-        }
-
-    }
-
-    return nb;
-
-}
-
-
-Mot **tabVariableUsed(char *tabChar){
-
-    if(nbVariableUsed(tabChar) == 0){
-
-        Mot **tab_var_used = malloc(sizeof(Mot*));
-        tab_var_used[0] = ajouteMot("NULL", 0, 0);
-        return tab_var_used;
-
-    }
-
-    int nbVar = nbVariableUsed(tabChar);
+    int nbVar = 0;
     Mot **tab_var_used = malloc(sizeof(Mot*) * nbVar);
+    Mot **tabTypCreate = listTypeCreated(tabChar);
     Mot *var_used = malloc(sizeof(Mot));
     int *tab_classe = scoringChar(tabChar);
     int j = 0;
@@ -470,7 +398,7 @@ Mot **tabVariableUsed(char *tabChar){
 
             if(testCommentaire(tabChar, i) != 1) {
 
-                if (tab_classe[i] == 3){
+                if (tab_classe[i] == 3 && testPointeur(tabChar, i) == 0){
 
                     //gauche de l'operateur
 
@@ -484,6 +412,108 @@ Mot **tabVariableUsed(char *tabChar){
                         while(tab_classe[h - 1] == 1)
                             h -= 1;
 
+                        // si déclaration de pointeur variable
+                        if(testTypeVarFunct(ecritMot(tabChar, h , j - 1),  tabTypCreate) == 1)
+                                continue;
+
+                        nbVar += 1;
+
+                    }
+
+
+                    //droite de l'operateur
+
+                    j = i;
+
+                    // si operation spécifique avec et &
+                    if(tabChar[j] == '&' && tabChar[j + 1] == '&' || tabChar[j + 1] == '=')
+                        continue;
+
+
+                    while((tabChar[j + 1] == ' ' || tabChar[j + 1] == '&' || tabChar[j + 1] == '*') && j + 1 < strlen(tabChar))
+                        j += 1;
+
+                    if(tab_classe[j + 1] == 1){
+
+                        h = j + 1;
+                        while(tab_classe[h + 1] == 1)
+                            h += 1;
+
+                        // si opération sur fonction
+                        while(tabChar[h + 1] == ' ')
+                            h += 1;
+
+                        if(tabChar[h + 1] == '(')
+                            continue;
+
+
+                        nbVar += 1;
+
+
+                    }
+
+
+                }
+
+            }
+
+
+        }
+
+
+    }
+
+    return nbVar;
+
+}
+
+
+// retourne un tableau des variables appelés
+
+Mot **tabVariableUsed(char *tabChar){
+
+    int nbVar = nbVariableUsed(tabChar);
+
+    if(nbVar == 0){
+
+        Mot **tab_var_used = malloc(sizeof(Mot*));
+        tab_var_used[0] = ajouteMot("NULL", 0, 0);
+        return tab_var_used;
+
+    }
+
+    Mot **tab_var_used = malloc(sizeof(Mot*) * nbVar);
+    Mot **tabTypCreate = listTypeCreated(tabChar);
+    Mot *var_used = malloc(sizeof(Mot));
+    int *tab_classe = scoringChar(tabChar);
+    int j = 0;
+    int h = 0;
+    int l = 0;
+
+    for(int i = 0; i < strlen(tabChar) ; i ++) {
+
+        if(testQuote(tabChar, i) != 1){
+
+            if(testCommentaire(tabChar, i) != 1) {
+
+                if (tab_classe[i] == 3 && testPointeur(tabChar, i) == 0){
+
+                    //gauche de l'operateur
+
+                    j = i;
+                    while(tabChar[j - 1] == ' ' && j - 1 > 0)
+                        j -= 1;
+
+                    if(tab_classe[j - 1] == 1){
+
+                        h = j - 1;
+                        while(tab_classe[h - 1] == 1)
+                            h -= 1;
+
+                        // si déclaration de pointeur variable
+                        if(testTypeVarFunct(ecritMot(tabChar, h , j - 1),  tabTypCreate) == 1)
+                                continue;
+
                         if(l == 0){
 
                             var_used = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), h);
@@ -492,6 +522,7 @@ Mot **tabVariableUsed(char *tabChar){
 
                         }
                         else{
+
                             var_used -> next = ajouteMot(ecritMot(tabChar, h, j - 1), findLine(tabChar, i), h);
                             var_used = var_used -> next;
                             tab_var_used[l] = var_used;
@@ -506,37 +537,44 @@ Mot **tabVariableUsed(char *tabChar){
 
                     j = i;
 
-                    while(tabChar[j + 1] == ' ' && j + 1 < strlen(tabChar))
+                    // si operation spécifique avec et &
+                    if(tabChar[j] == '&' && tabChar[j + 1] == '&' || tabChar[j + 1] == '=')
+                        continue;
+
+
+                    while((tabChar[j + 1] == ' ' || tabChar[j + 1] == '&' || tabChar[j + 1] == '*') && j + 1 < strlen(tabChar))
                         j += 1;
 
                     if(tab_classe[j + 1] == 1){
 
-                        h = j;
+                        h = j + 1;
                         while(tab_classe[h + 1] == 1)
                             h += 1;
 
-                        // si opération sur pointeur
+                        // si opération sur fonction
                         while(tabChar[h + 1] == ' ')
                             h += 1;
 
                         if(tabChar[h + 1] == '(')
                             continue;
 
+
                         if(l == 0){
 
-                            var_used = ajouteMot(ecritMot(tabChar, j, h + 1), findLine(tabChar, i), j);
+                            var_used = ajouteMot(ecritMot(tabChar, j + 1, h), findLine(tabChar, i), j + 1);
                             tab_var_used[l] = var_used;
                             l += 1;
 
                         }
                         else{
 
-                            var_used -> next = ajouteMot(ecritMot(tabChar, h, j + 1), findLine(tabChar, i), h);
+                            var_used -> next = ajouteMot(ecritMot(tabChar, j + 1, h), findLine(tabChar, i), j + 1);
                             var_used = var_used -> next;
                             tab_var_used[l] = var_used;
                             l += 1;
 
                         }
+
 
                     }
 
@@ -548,7 +586,9 @@ Mot **tabVariableUsed(char *tabChar){
 
         }
 
+
     }
+
     return SuppNbTab(tab_var_used);
 
 }
@@ -557,89 +597,9 @@ Mot **tabVariableUsed(char *tabChar){
 
 int nbArgumentUsed(char *tabChar){
 
-    int nb = 0;
+    int nb_arg = 0;
     int *tab_classe = scoringChar(tabChar);
-    int j = 0;
-
-    for(int i = 0; i < strlen(tabChar); i ++){
-
-        if(testCommentaire(tabChar, i) == 1 || testQuote(tabChar, i))
-            continue;
-
-        if(tabChar[i] == '('){
-
-            j = i + 1;
-            while(tabChar[j] == ' ')
-                j += 1;
-
-            if(tab_classe[j] == 1 && testQuote(tabChar, j) != 1){
-
-                while(tab_classe[j + 1] == 1 && j + 1 < strlen(tabChar))
-                    j += 1;
-
-                // si argument appelé est une fonction
-                while(tabChar[j + 1] == ' ' && j + 1 < strlen(tabChar))
-                    j += 1;
-
-                if(tabChar[j + 1] == '('){
-
-                        continue;
-                }
-                else{
-
-                    nb += 1;
-                }
-
-            }
-
-        }
-        else if(tabChar[i] == ',' && testParenthese(tabChar, i) == 1){
-
-            j = i + 1;
-            while(tabChar[j] == ' ')
-                j += 1;
-
-            if(tab_classe[j] == 1 && testQuote(tabChar, j) != 1){
-
-                while(tab_classe[j + 1] == 1 && j + 1 < strlen(tabChar))
-                    j += 1;
-
-                // si argument appelé est une fonction
-                while(tabChar[j + 1] == ' ' && j + 1 < strlen(tabChar))
-                    j += 1;
-
-                if(tabChar[j + 1] == '('){
-
-                        continue;
-                }
-                else{
-
-                    nb += 1;
-                }
-            }
-
-        }
-
-    }
-
-    return nb;
-}
-
-// retorune une liste des variables passées en arguments de fonctions
-
-Mot** tabArgumentUsed(char *tabChar){
-
-    if(nbArgumentUsed(tabChar) == 0){
-
-        Mot **tab_arg = malloc(sizeof(Mot*));
-        tab_arg[0] = ajouteMot("NULL", 0, 0);
-        return tab_arg;
-
-    }
-
-    int *tab_classe = scoringChar(tabChar);
-    Mot** tab_arg = malloc(sizeof(Mot*) * nbArgumentUsed(tabChar));
-    Mot* arg = malloc(sizeof(Mot));
+    Mot **tab_type = listTypeCreated(tabChar);
     int ind = 0;
     int j = 0;
     int h = 0;
@@ -649,9 +609,41 @@ Mot** tabArgumentUsed(char *tabChar){
         if(testCommentaire(tabChar, i) == 1 || testQuote(tabChar, i))
             continue;
 
-        if(tabChar[i] == '('){
+        if(tabChar[i] == '(' || tabChar[i] == '['){
 
-              j = i + 1;
+            // pas d'argument
+            j = i;
+            while(tabChar[j + 1] == ' ')
+                j += 1;
+
+            if(tabChar[j + 1] == ')' )
+                continue;
+
+              j = i;
+            while(tabChar[j + 1] == ' '  || tabChar[j + 1] == '&' || tabChar[j + 1] == '*')
+                j += 1;
+
+            if(tab_classe[j + 1] == 1 && testQuote(tabChar, j + 1) != 1){
+
+                h = j + 1;
+                while(tab_classe[h + 1] == 1 && h + 1 < strlen(tabChar))
+                    h++;
+
+                // si argument appelé est une fonction
+                if(tabChar[h + 1] == '(')
+                    continue;
+
+                // si argument d'une déclaration de fonction
+                if(testTypeVarFunct(ecritMot(tabChar, j + 1, h), tab_type) == 1)
+                    continue;
+
+                nb_arg += 1;
+            }
+        }
+
+        else if(tabChar[i] == ',' && testParenthese(tabChar, i) == 1){
+
+            j = i + 1;
             while(tabChar[j] == ' ')
                 j += 1;
 
@@ -661,20 +653,91 @@ Mot** tabArgumentUsed(char *tabChar){
                 while(tab_classe[h + 1] == 1)
                     h++;
 
+                if(tabChar[h + 1] == '(')
+                    continue;
+
+                    // si argument d'une déclaration de fonction
+                if(testTypeVarFunct(ecritMot(tabChar, j, h), tab_type) == 1)
+                    continue;
+
+                    nb_arg += 1;
+
+
+            }
+
+        }
+
+
+    }
+
+    return nb_arg;
+
+}
+
+// retorune une liste des variables passées en arguments de fonctions
+
+Mot **tabArgumentUsed(char *tabChar){
+
+    int nbArg = nbArgumentUsed(tabChar);
+
+    if(nbArg == 0){
+
+        Mot **tab_arg = malloc(sizeof(Mot*));
+        tab_arg[0] = ajouteMot("NULL", 0, 0);
+        return tab_arg;
+
+    }
+
+    int *tab_classe = scoringChar(tabChar);
+    Mot **tab_type = listTypeCreated(tabChar);
+    Mot **tab_arg = malloc(sizeof(Mot*) * nbArg);
+    Mot *arg = malloc(sizeof(Mot));
+    int ind = 0;
+    int j = 0;
+    int h = 0;
+
+    for(int i = 0; i < strlen(tabChar) ; i ++){
+
+        if(testCommentaire(tabChar, i) == 1 || testQuote(tabChar, i))
+            continue;
+
+        if(tabChar[i] == '(' || tabChar[i] == '['){
+
+            // pas d'argument
+            j = i;
+            while(tabChar[j + 1] == ' ')
+                j += 1;
+
+            if(tabChar[j + 1] == ')' )
+                continue;
+
+              j = i;
+            while(tabChar[j + 1] == ' '  || tabChar[j + 1] == '&' || tabChar[j + 1] == '*')
+                j += 1;
+
+            if(tab_classe[j + 1] == 1 && testQuote(tabChar, j + 1) != 1){
+
+                h = j + 1;
+                while(tab_classe[h + 1] == 1 && h + 1 < strlen(tabChar))
+                    h++;
+
                 // si argument appelé est une fonction
                 if(tabChar[h + 1] == '(')
                     continue;
 
+                // si argument d'une déclaration de fonction
+                if(testTypeVarFunct(ecritMot(tabChar, j + 1, h), tab_type) == 1)
+                    continue;
 
                 if(ind == 0){
 
-                    arg = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
+                    arg = ajouteMot(ecritMot(tabChar, j + 1, h), findLine(tabChar, h), j);
                     tab_arg[ind] = arg;
                     ind += 1;
                 }
                 else {
 
-                    arg -> next = ajouteMot(ecritMot(tabChar, j, h), findLine(tabChar, h), j);
+                    arg -> next = ajouteMot(ecritMot(tabChar, j + 1, h), findLine(tabChar, h), j);
                     arg = arg -> next;
                     tab_arg[ind] = arg;
                     ind += 1;
@@ -697,6 +760,10 @@ Mot** tabArgumentUsed(char *tabChar){
 
                     if(tabChar[h + 1] == '(')
                         continue;
+
+                    // si argument d'une déclaration de fonction
+                if(testTypeVarFunct(ecritMot(tabChar, j, h), tab_type) == 1)
+                    continue;
 
                     if(ind == 0){
 
@@ -723,7 +790,7 @@ Mot** tabArgumentUsed(char *tabChar){
     }
 
 
-    return tab_arg;
+    return SuppNbTab(tab_arg);
 
 }
 
@@ -732,12 +799,12 @@ Mot** tabArgumentUsed(char *tabChar){
 
 int nbFonctUsed(char *tabChar){
 
+    int nb_funct_used = 0;
     int *tab_classe = scoringChar(tabChar);
-    int nbFnct = 0;
     int h = 0;
+    int j = 0;
 
     for(int i = 0; i < strlen(tabChar); i ++){
-
 
         if(testCommentaire(tabChar, i) == 1 || testQuote(tabChar, i) == 1)
             continue;
@@ -748,8 +815,34 @@ int nbFonctUsed(char *tabChar){
                 while(tabChar[h - 1] == ' ')
                     h -= 1;
 
-                if(tab_classe[h - 1] == 1)
-                    nbFnct += 1;
+                if(tab_classe[h - 1] == 1){
+
+                    j = h - 1;
+                    while(tab_classe[j - 1] == 1)
+                        j -= 1;
+
+                // si appel de fonction en debut de ligne
+                if(!(tabChar[j - 1] == ';' || tabChar[j - 1] == '\n')){
+
+                    // si declrartion de fonctoin
+                    int g = j;
+                    while(tabChar[g - 1] == ' ' || tabChar[g - 1] == '*')
+                    g -= 1;
+
+                    if(tab_classe[g - 1] == 1)
+                        continue;
+
+                    // si compris dans la syntaxe du C
+                    if(testSyntaxe(ecritMot(tabChar, j, h - 1)) == 1)
+                        continue;
+
+
+                     nb_funct_used += 1;
+
+                }
+
+
+            }
 
 
         }
@@ -757,7 +850,7 @@ int nbFonctUsed(char *tabChar){
 
     }
 
-    return nbFnct;
+    return nb_funct_used;
 
 }
 
@@ -765,7 +858,8 @@ int nbFonctUsed(char *tabChar){
 
 Mot **tabFonctUsed(char *tabChar){
 
-    if(nbFonctUsed(tabChar) == 0){
+    int nb_funct_used = nbFonctUsed(tabChar);
+    if(nb_funct_used == 0){
 
         Mot **tabFU = malloc(sizeof(Mot*));
         tabFU[0] = ajouteMot("NULL", 0, 0);
@@ -773,7 +867,7 @@ Mot **tabFonctUsed(char *tabChar){
 
     }
 
-    Mot **tabFU = malloc(sizeof(Mot*) * nbFonctUsed(tabChar));
+    Mot **tabFU = malloc(sizeof(Mot*) * nb_funct_used);
     Mot *functUsed = malloc(sizeof(Mot));
     int *tab_classe = scoringChar(tabChar);
     int ind = 0;
@@ -798,6 +892,23 @@ Mot **tabFonctUsed(char *tabChar){
                     while(tab_classe[j - 1] == 1)
                         j -= 1;
 
+                // si appel de fonction en debut de ligne
+                if(!(tabChar[j - 1] == ';' || tabChar[j - 1] == '\n')){
+
+                    // si declrartion de fonctoin
+                    int g = j;
+                    while(tabChar[g - 1] == ' ' || tabChar[g - 1] == '*')
+                    g -= 1;
+
+                    if(tab_classe[g - 1] == 1)
+                        continue;
+
+                    // si compris dans la syntaxe du C
+                    if(testSyntaxe(ecritMot(tabChar, j, h - 1)) == 1)
+                        continue;
+
+                }
+
                     if(ind == 0){
 
                         functUsed = ajouteMot(ecritMot(tabChar, j, h - 1), findLine(tabChar, j), j);
@@ -820,7 +931,250 @@ Mot **tabFonctUsed(char *tabChar){
 
     }
 
-
     return tabFU;
 
+}
+
+// Compte le nombre de déclarations de variables
+
+int nbVarDeclar(char *tabChar){
+
+    Mot **tabDeMot = tabMot(tabChar);
+    Mot **tabTypeCree = listTypeCreated(tabChar);
+    int *tab_classe = scoringChar(tabChar);
+    int nbVarDec = 0;
+
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
+
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabTypeCree) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
+
+           int test = testTypeVarFunct(tabDeMot[i+1] -> chaine, tabTypeCree);
+           if(test != 1) {
+
+                // si variables
+                int h = tabDeMot[i + 1] -> posFirstChar;
+
+                while(tab_classe[h + 1] == 1)
+                    h += 1;
+
+                while(tabChar[h + 1] == ' ')
+                    h += 1;
+
+                if(tabChar[h + 1] != '(')
+                    nbVarDec += 1;
+
+           }
+
+        }
+
+    }
+
+    freeTable(tabDeMot[0]);
+    freeTable(tabTypeCree[0]);
+
+    return nbVarDec;
+
+}
+
+// retourne un tableau des varables declarees
+
+Mot **tabVarDeclar(char *tabChar){
+
+
+    int nbVarDec = nbVarDeclar(tabChar);
+
+    if(nbVarDec == 0){
+
+        Mot **tab_var_dec = malloc(sizeof(Mot*));
+        tab_var_dec[0] = ajouteMot("NULL", 0, 0);
+        return tab_var_dec;
+
+    }
+
+    Mot **tabDeMot = tabMot(tabChar);
+    Mot **tabTypeCree = listTypeCreated(tabChar);
+    Mot **tab_var_dec = malloc(sizeof(Mot*) * nbVarDec);
+    Mot *var_dec = malloc(sizeof(Mot));
+    int *tab_classe = scoringChar(tabChar);
+    int ind = 0;
+
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
+
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabTypeCree) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
+
+                if(testCommentaire(tabChar, tabDeMot[i] -> posFirstChar) == 1 || testQuote(tabChar, tabDeMot[i] -> posFirstChar) == 1)
+                    continue;
+
+           int test = testTypeVarFunct(tabDeMot[i + 1] -> chaine, tabTypeCree);
+           if(test != 1) {
+
+                // si fin de chaine
+                int h = tabDeMot[i] -> posFirstChar;
+
+                int indSeparateur = 0;
+
+                while(h + 1 <= tabDeMot[i + 1] -> posFirstChar ){
+                    h += 1;
+                    if(tabChar[h] == '\n' || tabChar[h] == ';')
+                            indSeparateur = 1;
+                }
+                if(indSeparateur == 1)
+                    continue;
+
+
+                // si variables
+                h = tabDeMot[i + 1] -> posFirstChar;
+
+                while(tab_classe[h + 1] == 1)
+                    h += 1;
+
+                while(tabChar[h + 1] == ' ')
+                    h += 1;
+
+                if(tabChar[h + 1] != '('){
+
+                    if(ind == 0){
+                        var_dec = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
+                        tab_var_dec[ind] = var_dec;
+                        ind += 1;
+
+                    }
+
+                    else{
+
+                        var_dec -> next = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
+                        var_dec = var_dec -> next;
+                        tab_var_dec[ind] = var_dec;
+                        ind += 1;
+
+                    }
+
+
+                }
+
+           }
+
+        }
+
+    }
+
+    freeTable(tabDeMot[0]);
+    freeTable(tabTypeCree[0]);
+    return tab_var_dec;
+}
+
+
+// Compte le nombre de déclarations de fonctions
+
+int nbFunctDeclar(char *tabChar){
+
+    Mot **tabDeMot = tabMot(tabChar);
+    Mot **tabTypeCree = listTypeCreated(tabChar);
+    int *tab_classe = scoringChar(tabChar);
+    int nbFunctDec = 0;
+
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
+
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabTypeCree) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
+
+            if(testCommentaire(tabChar, tabDeMot[i] -> posFirstChar) == 1 || testQuote(tabChar, tabDeMot[i] -> posFirstChar) == 1 )
+                continue;
+
+           int test = testTypeVarFunct(tabDeMot[i + 1] -> chaine, tabTypeCree);
+           if(test != 1) {
+
+                // si Fonction
+                int h = tabDeMot[i + 1] -> posFirstChar;
+
+                while(tab_classe[h + 1] == 1)
+                    h += 1;
+
+                while(tabChar[h + 1] == ' ')
+                    h += 1;
+
+                if(tabChar[h + 1] == '(')
+                    nbFunctDec += 1;
+
+           }
+
+        }
+
+    }
+
+    freeTable(tabDeMot[0]);
+    freeTable(tabTypeCree[0]);
+    return nbFunctDec;
+
+}
+
+// retourne un tableau des fonctions declarees
+
+Mot **tabFunctDeclar(char *tabChar){
+
+    int nbFunctDec = nbFunctDeclar(tabChar);
+
+    if(nbFunctDec == 0){
+
+        Mot **tab_funct_dec = malloc(sizeof(Mot*));
+        tab_funct_dec[0] = ajouteMot("NULL", 0, 0);
+        return tab_funct_dec;
+
+    }
+
+    Mot** tabDeMot = tabMot(tabChar);
+    Mot **tabTypeCree = listTypeCreated(tabChar);
+    Mot **tab_funct_dec = malloc(sizeof(Mot*) * nbFunctDec);
+    Mot *funct_dec = malloc(sizeof(Mot));
+    int *tab_classe = scoringChar(tabChar);
+
+    int ind = 0;
+
+
+    for(int i = 0; i < compteOccurence(tabDeMot[0]); i ++) {
+
+        if(testTypeVarFunct(tabDeMot[i] -> chaine, tabTypeCree) == 1 && i + 1 < compteOccurence(tabDeMot[0])){
+
+           int test = testTypeVarFunct(tabDeMot[i+1] -> chaine, tabTypeCree);
+           if(test != 1) {
+
+                // si fonctions
+                int h = tabDeMot[i + 1] -> posFirstChar;
+
+                while(tab_classe[h + 1] == 1)
+                    h += 1;
+
+                while(tabChar[h + 1] == ' ')
+                    h += 1;
+
+                if(tabChar[h + 1] == '('){
+
+                    if(ind == 0){
+                        funct_dec = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
+                        tab_funct_dec[ind] = funct_dec;
+                        ind += 1;
+
+                    }
+
+                    else{
+
+                        funct_dec -> next = ajouteMot(tabDeMot[i + 1] -> chaine, tabDeMot[i + 1] -> ligne, tabDeMot[i + 1] -> posFirstChar);
+                        funct_dec = funct_dec -> next;
+                        tab_funct_dec[ind] = funct_dec;
+                        ind += 1;
+
+                    }
+
+
+                }
+
+           }
+
+        }
+
+    }
+
+    freeTable(tabDeMot[0]);
+    freeTable(tabTypeCree[0]);
+
+    return tab_funct_dec;
 }

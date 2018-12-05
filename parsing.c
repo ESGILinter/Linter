@@ -181,6 +181,14 @@ int *scoringChar(char *tabChar) {
 char *ecritMot(char *tabChar, int ind1, int ind2 ) {
 
     int lenMot = ind2 - ind1 + 1;
+
+    if(lenMot < 0){
+
+        char *mot = malloc(sizeof(char)*lenMot);
+        mot = "NULL";
+        return mot;
+    }
+
     int j = 0;
     char *mot = malloc(sizeof(char)*lenMot);
 
@@ -189,7 +197,11 @@ char *ecritMot(char *tabChar, int ind1, int ind2 ) {
         mot[j] = tabChar[i];
         j += 1;
     }
+
     mot[j] = '\0';
+
+
+
 
     return mot;
 
@@ -216,3 +228,5 @@ int nombreMot(char *tabChar) {
 
     return compt;
 }
+
+

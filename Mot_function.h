@@ -33,19 +33,25 @@ void freeTable(Mot *word);
 
 Mot *ajouteMot(char *chai, int line, int position);
 
-int nbTypeCreated(Mot **tabMot);
-Mot **listTypeCreated(Mot **tabMot);
+Mot **SuppNbTab(Mot **tabMot);
+
+int nbTypeCreated(char *tabChar);
+Mot **listTypeCreated(char *tabChar);
+
+int nbVarDeclar(char *tabChar);
+Mot **tabVarDeclar(char *tabChar);
+
+int nbFunctDeclar(char *tabChar);
+Mot **tabFunctDeclar(char *tabChar);
 
 int nbVarFonctDeclar(char *tabChar);
 Mot **tabVarFonctDeclar(char *tabChar);
-
-Mot **SuppNbTab(Mot **tabMot);
 
 int nbVariableUsed(char *tabChar);
 Mot **tabVariableUsed(char *tabChar);
 
 int nbArgumentUsed(char *tabChar);
-Mot** tabArgumentUsed(char *tabChar);
+Mot **tabArgumentUsed(char *tabChar);
 
 int nbFonctUsed(char *tabChar);
 Mot **tabFonctUsed(char *tabChar);

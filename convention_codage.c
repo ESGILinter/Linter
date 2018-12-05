@@ -57,6 +57,9 @@ void max_line_numbers(char *tabChar, int maxChar, char *nomFich) {
 
         if(tabChar[i] == '\n' || i == strlen(tabChar) - 1) {
 
+            if(testCommentaire(tabChar, i - 1) == 1)
+                continue;
+
             if(compteur > maxChar) {
 
                 ligne = findLine(tabChar, i);
@@ -84,24 +87,24 @@ void no_trailing_space(char *tabChar, char *nomFich) {
 
     for (int i = 0 ; i < strlen(tabChar) ; i += 1) {
 
-        if(testCommentaire(tabChar, i) == 1 || testQuote(tabChar, i) == 1)
-            continue;
-
         compt = 0;
 
         if(tabChar[i] == '\n' || i == strlen(tabChar) - 1) {
 
-            j = i - 1;
-            while(tabChar[j] != '\n' && i != j) {
+            j = i;
+            while(tabChar[j - 1] != '\n' && j - 1 >= 0) {
 
-                if(tabChar[j] != ' ') {
+                if(tabChar[j - 1] != ' ') {
                     break;
                 }
                 j  -= 1;
                 compt += 1;
             }
 
-        if(compt != 0) {
+        if(testCommentaire(tabChar, j) == 1 || testQuote(tabChar, j) == 1)
+            continue;
+
+        if(compt > 0) {
 
             ligne = findLine(tabChar, i);
             printf("Error Convention Codage : no-trailing-space line %d in %s.\n", ligne, nomFich );
@@ -128,14 +131,7 @@ void operator_spacing(char *tabChar, char *nomFich) {
 
             if(testQuote(tabChar, i) != 1) {
 
-                    if(testCommentaire(tabChar, i) != 1 ) {
-
-
-                        if(tabChar[i] == '*') {
-
-                            if(testEtoile(tabChar, i) == 1)
-                                continue;
-                        }
+                    if(testCommentaire(tabChar, i) != 1 && testPointeur(tabChar, i) == 0) {
 
 
                         if( (!(tabChar[i + 1] == ' ' || tableInd[i + 1] == 3) || !(tabChar[i - 1] == ' ' || tableInd[i - 1] == 3)) )

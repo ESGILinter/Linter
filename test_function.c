@@ -106,104 +106,6 @@ int testCommentaire(char *tabChar, int indice){
 
 }
 
-// teste si "" * "" est pour une operation (return 0) ou est un pointeur ( return 1)
-
-int testEtoile(char *tabChar, int indice) {
-
-    int rep = 0;
-    int *tableInd = scoringChar(tabChar);
-    char *word;
-    Mot **tabDeMot = tabMot(tabChar);
-    Mot **tabDeTypeCree = listTypeCreated(tabDeMot);
-    Mot **tabVFdecl = tabVarFonctDeclar(tabChar);
-    int test = 0;
-    int i = 0;
-    int j = 0;
-
-    if(tabChar[indice] != '*')
-        return -1;
-    // si declaration de pointeur
-
-    // gauche du pointeur
-
-    i = indice - 1;
-    while (tabChar[i] == ' ' && i > 0)
-        i -= 1;
-
-    if(tableInd[i] == 1) {
-
-        j = i;
-        while(tableInd[i] == 1 && i > 0)
-            i -= 1;
-
-        word = ecritMot(tabChar, i + 1, j);
-        test = testTypeVarFunct(word, tabDeTypeCree);
-
-    }
-
-    if(test == 1) {
-
-        //droite du pointeur
-
-        i = indice + 1;
-        while(tabChar[i] == ' ' && i < strlen(tabChar))
-            i ++;
-
-        if(tableInd[i] == 1) {
-
-            j = i;
-            while(tableInd[j] == 1 && i < strlen(tabChar))
-                j += 1;
-
-        }
-
-        word = ecritMot(tabChar, i, j - 1);
-        test = testNameVarFonct(word, tabVFdecl);
-
-        if(test == 1)
-            rep = 1;
-
-    }
-
-    // si operation sur pointeur
-
-    if(rep == 0) {
-        // lecture a droite de l'etoile
-        i = indice + 1;
-        test = 0;
-
-        while(tabChar[i] == ' ' && i < strlen(tabChar))
-            i ++;
-
-        if(tableInd[i] == 1) {
-
-            j = i;
-            while(tableInd[j] == 1 && i < strlen(tabChar))
-                j += 1;
-                word = ecritMot(tabChar, i, j - 1);
-                test = testNameVarFonct(word, tabVFdecl);
-
-        }
-
-        if(test == 1) {
-
-            // lecture a gauche
-            i = indice - 1;
-
-            while(tabChar[i] == ' ' && i - 1 > 0)
-                i -= 1;
-
-            if(tableInd[i] == 4 || tableInd[i] == 3)
-                    rep = 1;
-
-            }
-
-        }
-
-
-    return rep;
-
-}
 
 // test si le charactère est entre parentheses
 int testParenthese(char *tabChar, int indice){
@@ -240,14 +142,20 @@ int compareStrat(char *tabChar, int indChar1, int indChar2){
     int countStrat = 0;
     int indChange = 0;
 
+
     if(indChar1 > indChar2)
         return -1;
 
-    for(int i = indChar2; i >= indChar1 ; i -= 1){
+    int indNearOpenCur = indChar2;
+    while(tabChar[indNearOpenCur - 1] != '{' && indNearOpenCur - 1 > 0 )
+        indNearOpenCur -= 1;
+
+    for(int i = indNearOpenCur - 1 ; i >= indChar1 ; i -= 1){
 
         if(tabChar[i] == '}'){
             countStrat -= 1;
             indChange += 1;
+
         }
 
         else if(tabChar[i] == '{'){
@@ -332,4 +240,128 @@ int findLine(char *tabChar, int indChar) {
     }
 
     return ligne;
+}
+
+
+// retourne 1 si le chractère envoyé est un indicateur de pointeur
+
+int testPointeur(char *tabChar, int indice){
+
+    int rep = 0;
+    int *tab_classe = scoringChar(tabChar);
+    Mot **lt_type_cree = listTypeCreated(tabChar);
+    int i = indice;
+    int countEtoile = 0;
+
+
+    if(tabChar[indice] != '&' && tabChar[indice] != '*')
+        return 0;
+
+    if(testCommentaire(tabChar, indice) == 1 || testQuote(tabChar, indice) == 1)
+        return 0;
+
+
+        // debut de chaine
+        while(tabChar[i - 1] == ' ' && i - 1 >= 0)
+            i -= 1;
+        if(tabChar[i - 1] == '\n' || i - 1 < 0)
+            return 1;
+
+        i = indice;
+        while(tabChar[i + 1] == ' ' || tabChar[i + 1] == '*')
+            i += 1;
+
+        // bitwise and assigment
+        if(tabChar[i + 1] == '=' && tabChar[i] == '&')
+            return 0;
+
+        // si &&
+
+        if((tabChar[indice - 1] == '&' || tabChar[indice + 1] == '&') && tabChar[indice] == '&')
+                    return 0;
+
+        if(tab_classe[i + 1] == 1 || tabChar[ i + 1 ] == '(' ){
+
+            // &
+            if(tabChar[indice] == '&'){
+
+                int h = indice;
+
+                while(tabChar[h - 1] == ' ' && h - 1 >= 0)
+                    h -= 1;
+
+                if(tab_classe[h - 1] == 3){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+
+
+
+            }
+
+            // *
+
+            int h = i + 1;
+            while(tabChar[h - 1] == '*' || tabChar[h - 1] == ' '){
+
+                h -= 1;
+                if(tabChar[h] == '*')
+                    countEtoile += 1;
+
+            }
+            // si adresse de pointeur
+            if(tabChar[h - 1] == '&' && tabChar[h - 2] != '&')
+                return 1;
+
+            // si operation sur pointeut
+            if(tab_classe[h - 1] == 3)
+                return 1;
+
+            // si déclaration de pointeur
+            i = h - 1;
+            if(tab_classe[i] == 1){
+                while(tab_classe[i - 1] == 1 && i - 1 >= 0)
+                    i -= 1;
+
+                if(testTypeVarFunct(ecritMot(tabChar, i, h - 1), lt_type_cree) == 1)
+                    return 1;
+
+            }
+
+            // si simple multiplication
+            if(countEtoile == 1)
+                return 0;
+
+            // si mutiplication sur pointeur
+            int g = h;
+            while(tabChar[g] != '*')
+                g += 1;
+            if(g == indice)
+                return 0;
+
+
+
+    }
+    freeTable(lt_type_cree);
+    return 1;
+}
+
+// retourne 1 si le mot est une est compris dans la syntaxe du C
+
+int testSyntaxe(char *word){
+
+    // non exhaustif
+    char *tabSyntaxe[] = {"if", "else", "switch", "while", "for", "malloc", "free", "return", "sizeof"};
+
+    for(int i = 0; i < 9; i += 1){
+
+        if(strcmp(word, tabSyntaxe[i]) == 0){
+            return 1;
+        }
+    }
+
+    return 0;
+
 }
