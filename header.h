@@ -8,4 +8,6 @@ char* trim_one_space(char*, int);
 void copy_file(FILE*, char*);
 int line_contains_char(char*, char);
 int line_number(char*);
-char** copy_lines(char*, int);
+char** copy_lines(char*, int, int*);
+char** copy_lines2(char*, int, int*);
+int is_global(char*, int, int);

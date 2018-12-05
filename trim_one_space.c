@@ -29,6 +29,6 @@ char* trim_one_space(char* tab, int size){
             i++;
         }
     }
-    res[j-1] = EOF;
+    res[i-1] = EOF;
     return res;
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "header.h"
 
 int main(){
@@ -21,48 +22,69 @@ int main(){
 
     char* res = trim_one_space(tab, nbCharTotal);
 
-    /*int j;
-    for(j = 0; j < nbCharTotal; j++){
-        printf("%c", res[j]);
-    }*/
-
+    int* index = malloc(sizeof(int));
     int nb_lines = line_number(res);
+    char** tab_proto = copy_lines(res, nb_lines, index);
 
-    char** tab_proto = copy_lines(res, nb_lines);
+    int* index2 = malloc(sizeof(int));
+    char** tab_proto2 = copy_lines2(res, nb_lines, index2);
 
-    int a;
-    int b;
-
-    for(a = 0; a < nb_lines; a++){
-        b = 0;
-        while(tab_proto[a][b] != EOF && tab_proto[a][b] != '\n'){
-            printf("%c", tab_proto[a][b]);
-            b++;
+    int i, j;
+    for(i = 0; i < *index2; i++){
+        j = 0;
+        while(tab_proto2[i][j] != '('){
+            j++;
         }
-        printf("%c", tab_proto[a][b]);
-        printf("\n");
+        if(tab_proto2[i][j-1] == ' ') {
+            tab_proto2[i][j-1] = '\0';
+        }else{
+            tab_proto2[i][j] = '\0';
+        }
     }
 
-    //récupérer les prototypes
-        //récupérer les lignes sans '{'
-        //récupérer les lignes sans '='
-        //récupérer les lignes avec '()'
-        //récupérer les lignes avec ';'
+    for(i = 0; i < *index; i++){
+        j = 0;
+        while(tab_proto[i][j] != '('){
 
+            j++;
+        }
 
-    //récupérer les fonctions
-        //récupérer les lignes avec '{'
-        //récupérer les lignes sans '='
-        //récupérer les lignes avec '()'
+        if(tab_proto[i][j-1] == ' ') {
+            tab_proto[i][j-1] = '\0';
+        }else{
+            tab_proto[i][j] = '\0';
+        }
+    }
+
+    int check;
+    //tab_proto2 = tableau fonctions
+
+    for(i = 0; i < *index2; i++){
+        check = 1;
+        for(j = 0; j < *index; j++){
+
+            check = strcmp(tab_proto2[i], tab_proto[j]);
+            if(check == 0){
+                break;
+            }
+        }
+        if(check) printf("Prototype non defini pour la fonction : %s\n", tab_proto2[i]);
+    }
 
     free(res);
 
-    int i;
     for(i = 0; i < nb_lines; i++){
         free(tab_proto[i]);
     }
     free(tab_proto);
 
+    for(i = 0; i < nb_lines; i++){
+        free(tab_proto2[i]);
+    }
+    free(tab_proto2);
+
+    free(index);
+    free(index2);
     //indent(file, 4, tab, nbCharTotal);
 	//array_backet_eol(file, tab, nbCharTotal);
     //no_multi_declaration(file, tab, nbCharTotal);
@@ -71,31 +93,3 @@ int main(){
     fclose(file);
     return 0;
 }
-
-    //creer une premiere structure :
-
-    /*
-
-    typedef struct Parametre Parametre;
-        struct Parametre
-        {
-            char* type;
-            char* name;
-            Parametre *suivant;
-        };
-
-    typedef struct Liste Liste;
-        struct Liste
-        {
-            Parametre *premier;
-        };
-
-    typedef struct Prototype Prototype;
-        struct Prototype
-        {
-            char* type;
-            char* function;
-
-
-        };
-    */

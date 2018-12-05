@@ -5,12 +5,13 @@ void func(int* p){
     *p +=1;
 }
 
-int main(int argc, const char* const * argv){
+void sdsdsdsd(int*);
 
-    int a, b;
-    //int               b;
-
-	while(rezr             ){
-        printf("{");
-	}
+int main(int argc, const char* const * argv)
+{
+    while(sdfsf     ){
+        sfsdffds();
+    }
 }
+
+void test(retret*);

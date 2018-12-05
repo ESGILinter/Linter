@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "header.h"
 
 //Retourne le nombre de caractères présents dans le fichier
 int char_count(FILE* file){
@@ -119,7 +120,7 @@ int line_number(char* tab){
     return cpt;
 }
 
-char** copy_lines(char* tab, int nbl){
+char** copy_lines(char* tab, int nbl, int* index){
 
     char** tab_proto = malloc(sizeof(char*)*nbl);
     int i;
@@ -131,6 +132,7 @@ char** copy_lines(char* tab, int nbl){
 
     int cpt = 0;
     int j = 0;
+    int index_proto = 0;
 
     while(cpt < nbl){
 
@@ -145,20 +147,131 @@ char** copy_lines(char* tab, int nbl){
         j++;
         i = 0;
 
-    if(line_contains_char(tab_temp, '{') == 0 && line_contains_char(tab_temp, '=') == 0 && line_contains_char(tab_temp, '(') == 1 && line_contains_char(tab_temp, ')') == 1 && line_contains_char(tab_temp, ';') == 1){
+        if(line_contains_char(tab_temp, '{') == 0 && line_contains_char(tab_temp, '=') == 0 && line_contains_char(tab_temp, '(') == 1 && line_contains_char(tab_temp, ')') == 1 && line_contains_char(tab_temp, ';') == 1){
 
-        while(tab_temp[i] != EOF && tab_temp[i] != '\n'){
+            while(tab_temp[i] != EOF && tab_temp[i] != '\n'){
 
-            tab_proto[cpt][i] = tab_temp[i];
-            i++;
-        }
-        tab_proto[cpt][i] = tab_temp[i];
-
+                tab_proto[index_proto][i] = tab_temp[i];
+                i++;
+            }
+            tab_proto[index_proto][i] = tab_temp[i];
+            index_proto++;
     }
 
     cpt++;
 
     }
 
+    *index = index_proto;
+    free(tab_temp);
     return tab_proto;
+}
+
+char** copy_lines2(char* tab, int nbl, int* index){
+
+    char** tab_proto = malloc(sizeof(char*)*nbl);
+    int i;
+    for(i = 0; i < nbl; i++){
+        tab_proto[i] = malloc(sizeof(char)*500);
+    }
+
+    char* tab_temp = malloc(sizeof(char*)*500);
+
+    int cpt = 0;
+    int j = 0;
+    int index_proto = 0;
+    int bound1;
+    int bound2;
+    int nb_acc = 0;
+
+    while(cpt < nbl){
+        bound1 = j;
+        i = 0;
+        while(tab[j] != EOF && tab[j] != '\n'){
+            if(tab[j] == '{') nb_acc++;
+            if(tab[j] == '}' && nb_acc > -1) nb_acc--;
+            tab_temp[i] = tab[j];
+            i++;
+            j++;
+        }
+        tab_temp[i] = tab[j];
+        j++;
+        i = 0;
+        bound2 = j;
+        if(((nb_acc-1 == 0) || is_global(tab, bound1, bound2) == 0) && line_contains_char(tab_temp, '=') == 0 && line_contains_char(tab_temp, '(') == 1
+        && line_contains_char(tab_temp, ')') == 1 && line_contains_char(tab_temp, ';') == 0){
+
+            while(tab_temp[i] != EOF && tab_temp[i] != '\n'){
+                tab_proto[index_proto][i] = tab_temp[i];
+                i++;
+            }
+            tab_proto[index_proto][i] = tab_temp[i];
+            index_proto++;
+        }
+
+        cpt++;
+
+    }
+
+    *index = index_proto;
+    free(tab_temp);
+    return tab_proto;
+}
+
+int is_global(char* tab, int b1, int b2){
+
+    int nb_acc1 = 0;
+    int nb_acc2 = 0;
+    int cpt = 0;
+    while(cpt < b1){
+        if(tab[cpt] == '{') nb_acc1++;
+        if(tab[cpt] == '}' && nb_acc1 > -1) nb_acc1--;
+        cpt++;
+    }
+    cpt = 0;
+    while(cpt < b2){
+        if(tab[cpt] == '{') nb_acc2++;
+        if(tab[cpt] == '}' && nb_acc2 > -1) nb_acc2--;
+        cpt++;
+    }
+    if(nb_acc2 == 0 && nb_acc2 == 0){
+        return 0;
+    }
+    else{
+
+        return 1;
+    }
+}
+
+int is_prototype(char* tab){
+
+    int cpt = 0;
+    int space_beg = 0;
+    int space = 0;
+    int w1 = 0;
+    int w2 = 0;
+    while(tab[cpt] != EOF || tab[cpt] != '\n'){
+
+        if(space_beg == 0 && (tab[cpt] == ' ' || tab[cpt] ==  9)) {
+
+            cpt++;
+            space_beg = 1;
+            continue;
+        }
+
+        if(tab[cpt] > 64 && tab[cpt] < 123 && w1 == 0){
+
+            w1 = 1;
+            cpt++;
+            continue;
+        }
+
+        if(tab[cpt] > 64 && tab[cpt] < 123 && w1 == 1){
+
+            w1 = 1;
+        }
+
+        cpt++;
+    }
+
 }
