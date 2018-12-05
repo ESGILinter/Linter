@@ -4,7 +4,7 @@
 	<stdlib.h>
 	"header.h"
 
-1543781515 d:\linter\linter\header.h
+1544047662 d:\linter\linter\header.h
 
 1543146294 source:d:\linter\linter\indent.c
 	<stdio.h>
@@ -16,12 +16,13 @@
 	<stdlib.h>
 	"header.h"
 
-1543876534 source:d:\linter\linter\tools.c
+1544049100 source:d:\linter\linter\tools.c
 	<stdio.h>
 	<stdlib.h>
+	<string.h>
 	"header.h"
 
-1543876455 source:d:\linter\linter\main.c
+1544049061 source:d:\linter\linter\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

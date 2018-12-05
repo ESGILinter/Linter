@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "header.h"
 
 //Retourne le nombre de caractères présents dans le fichier
@@ -243,35 +244,19 @@ int is_global(char* tab, int b1, int b2){
     }
 }
 
-int is_prototype(char* tab){
+int get_line_number(char* word, char* array){
 
-    int cpt = 0;
-    int space_beg = 0;
-    int space = 0;
-    int w1 = 0;
-    int w2 = 0;
-    while(tab[cpt] != EOF || tab[cpt] != '\n'){
 
-        if(space_beg == 0 && (tab[cpt] == ' ' || tab[cpt] ==  9)) {
+     char *s;
+     s = strstr(array, word);
+     int line_number = 1;
+     int limit = s - array;
+     int i = 0;
+     while(i < limit){
+        if(array[i] == '\n') line_number++;
+        i++;
+     }
 
-            cpt++;
-            space_beg = 1;
-            continue;
-        }
-
-        if(tab[cpt] > 64 && tab[cpt] < 123 && w1 == 0){
-
-            w1 = 1;
-            cpt++;
-            continue;
-        }
-
-        if(tab[cpt] > 64 && tab[cpt] < 123 && w1 == 1){
-
-            w1 = 1;
-        }
-
-        cpt++;
-    }
+    return line_number;
 
 }

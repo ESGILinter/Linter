@@ -40,6 +40,14 @@ int main(){
         }else{
             tab_proto2[i][j] = '\0';
         }
+
+        if(tab_proto2[i][0] == ' '){
+            int cpt = 0;
+            while(tab_proto2[i][cpt] != '\0'){
+                tab_proto2[i][cpt] = tab_proto2[i][cpt + 1];
+                cpt++;
+            }
+        }
     }
 
     for(i = 0; i < *index; i++){
@@ -54,10 +62,17 @@ int main(){
         }else{
             tab_proto[i][j] = '\0';
         }
+
+        if(tab_proto[i][0] == ' '){
+            int cpt = 0;
+            while(tab_proto[i][cpt] != '\0'){
+                tab_proto[i][cpt] = tab_proto[i][cpt + 1];
+                cpt++;
+            }
+        }
     }
 
     int check;
-    //tab_proto2 = tableau fonctions
 
     for(i = 0; i < *index2; i++){
         check = 1;
@@ -68,7 +83,12 @@ int main(){
                 break;
             }
         }
-        if(check) printf("Prototype non defini pour la fonction : %s\n", tab_proto2[i]);
+
+        if(check){
+
+            int line = get_line_number(tab_proto2[i], res);
+            printf("Prototype non defini pour la fonction : %s a la ligne %d\n", tab_proto2[i], line);
+        }
     }
 
     free(res);
@@ -76,11 +96,13 @@ int main(){
     for(i = 0; i < nb_lines; i++){
         free(tab_proto[i]);
     }
+
     free(tab_proto);
 
     for(i = 0; i < nb_lines; i++){
         free(tab_proto2[i]);
     }
+
     free(tab_proto2);
 
     free(index);

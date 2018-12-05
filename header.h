@@ -11,3 +11,4 @@ int line_number(char*);
 char** copy_lines(char*, int, int*);
 char** copy_lines2(char*, int, int*);
 int is_global(char*, int, int);
+int get_line_number(char*, char*);
